@@ -704,6 +704,12 @@ typedef struct {
    : (TRAMPOLINE_CODE_SIZE + POINTER_SIZE * 2))
 #define TRAMPOLINE_ALIGNMENT POINTER_SIZE
 
+/* CORE-V Specific */
+
+#define HAVE_POST_MODIFY_DISP TARGET_XCVMEM
+
+#define HAVE_POST_MODIFY_REG TARGET_XCVMEM
+
 /* Addressing modes, and classification of registers for them.  */
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) 0

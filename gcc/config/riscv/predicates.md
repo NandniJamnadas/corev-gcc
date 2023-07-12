@@ -161,10 +161,17 @@
 	      && riscv_split_symbol_type (symbol_type)
 	      && symbol_type != SYMBOL_PCREL;
 
+    case POST_MODIFY:
+      return false;
+
     default:
       return true;
     }
 })
+
+(define_predicate "mem_post_inc"
+  (and (match_code "mem")
+       (match_test "GET_CODE (XEXP (op,0)) == POST_MODIFY")))
 
 (define_predicate "symbolic_operand"
   (match_code "const,symbol_ref,label_ref")

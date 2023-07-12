@@ -95,12 +95,13 @@ along with GCC; see the file COPYING3.  If not see
        A signed 16-bit constant address.
 
    ADDRESS_SYMBOLIC:
-       A constant symbolic address.  */
+       A constant symbolic address. */
 enum riscv_address_type {
   ADDRESS_REG,
   ADDRESS_LO_SUM,
   ADDRESS_CONST_INT,
-  ADDRESS_SYMBOLIC
+  ADDRESS_SYMBOLIC,
+  ADDRESS_REG_INC
 };
 
 /* Information about a function's frame layout.  */
@@ -1051,12 +1052,23 @@ riscv_classify_address (struct riscv_address_info *info, rtx x,
 {
   switch (GET_CODE (x))
     {
+	    /* TODO: when printing the post inc register, GET_CODE(x) == REG. */
     case REG:
     case SUBREG:
       info->type = ADDRESS_REG;
       info->reg = x;
       info->offset = const0_rtx;
       return riscv_valid_base_register_p (info->reg, mode, strict_p);
+
+    case POST_MODIFY:
+      /* For instructions using post inc, the offset can either be register
+       * or 12-bit immediate. */
+       info->type = ADDRESS_REG_INC;
+       info->reg = XEXP (x, 0);
+       info->offset = XEXP ((XEXP (x, 1)), 1);
+       return (riscv_valid_base_register_p (info->reg, mode, strict_p)
+       && (riscv_valid_base_register_p (info->offset, mode, strict_p)
+	       || riscv_valid_offset_p (info->offset, mode)));
 
     case PLUS:
       /* RVV load/store disallow any offset.  */
@@ -2041,6 +2053,19 @@ riscv_v_adjust_scalable_frame (rtx target, poly_int64 offset, bool epilogue)
   REG_NOTES (insn) = dwarf;
 }
 
+/* Check if post inc instructions are valid. If not, make the address
+ * vaild. */
+bool
+riscv_legitimate_post_inc_p (machine_mode mode, rtx x, bool strict_p)
+{
+  struct riscv_address_info addr;
+
+  if (!riscv_classify_address (&addr, x, mode, strict_p))
+    return false;
+
+  return addr.type == ADDRESS_REG_INC;
+}
+
 /* If (set DEST SRC) is not a valid move instruction, emit an equivalent
    sequence that is valid.  */
 
@@ -2103,7 +2128,8 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
   if (GET_MODE_CLASS (mode) == MODE_INT
       && GET_MODE_SIZE (mode).to_constant () < UNITS_PER_WORD
       && can_create_pseudo_p ()
-      && MEM_P (src))
+      && MEM_P (src)
+      && GET_CODE (XEXP (src, 0)))
     {
       rtx temp_reg;
       int zero_extend_p;
@@ -2839,7 +2865,8 @@ riscv_output_move (rtx dest, rtx src)
 	    return "fmv.x.d\t%0,%1";
 	  }
 
-      if (src_code == MEM)
+      if (src_code == MEM
+	  && (GET_CODE (XEXP (src, 0)) != POST_INC))
 	switch (width)
 	  {
 	  case 1: return "lbu\t%0,%1";
@@ -4613,6 +4640,11 @@ riscv_print_operand_address (FILE *file, machine_mode mode ATTRIBUTE_UNUSED, rtx
 
       case ADDRESS_SYMBOLIC:
 	output_addr_const (file, riscv_strip_unspec_address (x));
+	return;
+
+      case ADDRESS_REG_INC:
+	riscv_print_operand (file, addr.offset, 0);
+	fprintf (file, "(%s!)", reg_names[REGNO (addr.reg)]);
 	return;
       }
   gcc_unreachable ();
