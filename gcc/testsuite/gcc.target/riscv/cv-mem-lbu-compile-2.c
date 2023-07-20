@@ -2,11 +2,11 @@
 /* { dg-options "-march=rv32i_xcvmem -mabi=ilp32 -fno-unroll-loops" } */
 /* { dg-skip-if "" { *-*-* }  { "-O0" "-Os" "-Og" "-Oz" } { "" } } */
 
-int fooQIunsigned (unsigned char* array_uchar, int n)
+int fooQIunsigned (unsigned char* array_uchar, int n, int j)
 {
   int uns_char_sum = 1;
 
-  for(int i=0; i<n; i++)
+  for(int i=0; i<n; i+=j)
   {
     uns_char_sum += array_uchar[i];
   }
@@ -14,4 +14,4 @@ int fooQIunsigned (unsigned char* array_uchar, int n)
   return uns_char_sum;
 }
 
-/* { dg-final { scan-assembler-times "cv\\.lbu\t\(\?\:t\[0-6\]\|a\[0-7\]\|s\[1-11\]\),1\\(\(\?\:t\[0-6\]\|a\[0-7\]\|s\[1-11\]\)\\!\\)" 1 } } */
+/* { dg-final { scan-assembler-times "cv\\.lbu\t\(\?\:t\[0-6\]\|a\[0-7\]\|s\[1-11\]\),(\?\:t\[0-6\]\|a\[0-7\]\|s\[1-11\]\)\\(\(\?\:t\[0-6\]\|a\[0-7\]\|s\[1-11\]\)\\!\\)" 1 } } */

@@ -2,11 +2,11 @@
 /* { dg-options "-march=rv32i_xcvmem -mabi=ilp32 -fno-unroll-loops" } */
 /* { dg-skip-if "" { *-*-* }  { "-O0" "-Os" "-Og" "-Oz" } { "" } } */
 
-int fooHIsigned (signed short int* array_short, int n)
+int fooHIsigned (signed short int* array_short, int n, int j)
 {
   int short_sum = 1;
 
-  for(int i=0; i<n; i++)
+  for(int i=0; i<n; i+=j)
   {
     array_short[i] += short_sum;
   }
@@ -14,11 +14,11 @@ int fooHIsigned (signed short int* array_short, int n)
   return short_sum;
 }
 
-int fooHIunsigned (unsigned short int* array_ushort, int n)
+int fooHIunsigned (unsigned short int* array_ushort, int n, int j)
 {
   int uns_short_sum = 1;
 
-  for(int i=0; i<n; i++)
+  for(int i=0; i<n; i+=j)
   {
     array_ushort[i] += uns_short_sum;
   }
@@ -26,4 +26,4 @@ int fooHIunsigned (unsigned short int* array_ushort, int n)
   return uns_short_sum;
 }
 
-/* { dg-final { scan-assembler-times "cv\\.sh\t\(\?\:t\[0-6\]\|a\[0-7\]\|s\[1-11\]\),2\\(\(\?\:t\[0-6\]\|a\[0-7\]\|s\[1-11\]\)\\!\\)" 2 } } */
+/* { dg-final { scan-assembler-times "cv\\.sh\t\(\?\:t\[0-6\]\|a\[0-7\]\|s\[1-11\]\),(\?\:t\[0-6\]\|a\[0-7\]\|s\[1-11\]\)\\(\(\?\:t\[0-6\]\|a\[0-7\]\|s\[1-11\]\)\\!\\)" 2 } } */
