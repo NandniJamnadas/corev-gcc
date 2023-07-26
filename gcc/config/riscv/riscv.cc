@@ -1078,8 +1078,16 @@ riscv_classify_address (struct riscv_address_info *info, rtx x,
       info->type = ADDRESS_REG;
       info->reg = XEXP (x, 0);
       info->offset = XEXP (x, 1);
-      return (riscv_valid_base_register_p (info->reg, mode, strict_p)
-	      && riscv_valid_offset_p (info->offset, mode));
+      if (TARGET_XCVMEM && GET_CODE (XEXP (x, 0)) == REG && GET_CODE (XEXP (x, 1)) == REG)
+	{
+	  return (riscv_valid_base_register_p (info->reg, mode, strict_p)
+	  && riscv_valid_base_register_p (info->offset, mode, strict_p));
+	}
+      else
+	{
+	  return (riscv_valid_base_register_p (info->reg, mode, strict_p)
+	  && riscv_valid_offset_p (info->offset, mode));
+	}
 
     case LO_SUM:
       /* RVV load/store disallow LO_SUM.  */
@@ -2060,10 +2068,23 @@ riscv_legitimate_post_inc_p (machine_mode mode, rtx x, bool strict_p)
 {
   struct riscv_address_info addr;
 
-  if (!riscv_classify_address (&addr, x, mode, strict_p))
-    return false;
+  switch (GET_CODE (x))
+    {
+    case POST_MODIFY:
+      if (!riscv_classify_address (&addr, x, mode, strict_p))
+	return false;
+      else
+	return addr.type == ADDRESS_REG_INC;
 
-  return addr.type == ADDRESS_REG_INC;
+    case PLUS:
+      if (!riscv_classify_address (&addr, x, mode, strict_p))
+	return false;
+      else
+	return addr.type == ADDRESS_REG;
+
+    default:
+      return false;
+    }
 }
 
 /* If (set DEST SRC) is not a valid move instruction, emit an equivalent
