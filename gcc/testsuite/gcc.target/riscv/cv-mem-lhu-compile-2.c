@@ -8,7 +8,8 @@ int fooHIunsigned (unsigned short int* array_ushort, int n, int j)
 
   for(int i=0; i<n; i+=j)
   {
-    uns_short_sum += array_ushort[i];
+    uns_short_sum += *array_ushort;
+    array_ushort+=j*sizeof(array_ushort);
   }
 
   return uns_short_sum;

@@ -8,7 +8,8 @@ int fooHIsigned (signed short int* array_short, int n, int j)
 
   for(int i=0; i<n; i+=j)
   {
-    short_sum += array_short[i];
+    short_sum += *array_short;
+    array_short+=j*sizeof(array_short);
   }
 
   return short_sum;

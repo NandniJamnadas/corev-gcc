@@ -8,7 +8,8 @@ int fooSIsigned (signed int* array_int, int n, int j)
 
   for(int i=0; i<n; i+=j)
   {
-    int_sum += array_int[i];
+    int_sum += *array_int;
+    array_int+=j*sizeof(array_int);
   }
 
   return int_sum;
@@ -20,7 +21,8 @@ int fooSIunsigned (unsigned int* array_uint, int n, int j)
 
   for(int i=0; i<n; i+=j)
   {
-    uns_int_sum += array_uint[i];
+    uns_int_sum += *array_uint;
+    array_uint+=j*sizeof(array_uint);
   }
 
   return uns_int_sum;

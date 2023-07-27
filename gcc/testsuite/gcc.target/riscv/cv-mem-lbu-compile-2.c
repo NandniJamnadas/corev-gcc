@@ -8,7 +8,8 @@ int fooQIunsigned (unsigned char* array_uchar, int n, int j)
 
   for(int i=0; i<n; i+=j)
   {
-    uns_char_sum += array_uchar[i];
+    uns_char_sum += *array_uchar;
+    array_uchar+=j*sizeof(array_uchar);
   }
 
   return uns_char_sum;

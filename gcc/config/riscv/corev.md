@@ -2882,3 +2882,11 @@
   "cv.<load><u>\t%0,%1"
   [(set_attr "type" "load")
    (set_attr "mode" "<MODE>")])
+
+(define_insn "cv_store<mode>"
+   [(set (match_operand:ANYI 0 "mem_plus_reg" "=m")
+     (match_operand:ANYI 1 "register_operand" "r"))]
+  "TARGET_XCVMEM && riscv_legitimate_post_inc_p (GET_MODE(XEXP(operands[0],0)) , XEXP(operands[0],0), (lra_in_progress || reload_completed))"
+  "cv.<store>\t%1,%0"
+  [(set_attr "type" "store")
+   (set_attr "mode" "<MODE>")])
